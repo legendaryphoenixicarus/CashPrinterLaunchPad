@@ -45,7 +45,7 @@ function saveFrontendFiles(token) {
   const TokenArtifact = artifacts.readArtifactSync("HHToken");
 
   fs.writeFileSync(
-    contractsDir + "/Token.json",
+    contractsDir + "/HHToken.json",
     JSON.stringify(TokenArtifact, null, 2)
   );
 }

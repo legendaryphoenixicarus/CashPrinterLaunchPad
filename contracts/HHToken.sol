@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
  
+// We import this library to be able to use console.log
+import "hardhat/console.sol";
+
 //Safe Math Interface
  
 contract SafeMath {
@@ -50,7 +53,7 @@ abstract contract ApproveAndCallFallBack {
  
 //Actual token contract
  
-contract HSCToken is ERC20Interface, SafeMath {
+contract HHToken is ERC20Interface, SafeMath {
     string public symbol;
     string public  name;
     uint8 public decimals;

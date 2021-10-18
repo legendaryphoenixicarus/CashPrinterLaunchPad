@@ -29,7 +29,10 @@
     "chai": "^4.2.0",
     "ethereum-waffle": "^3.1.1",
     "ethers": "^5.0.0",
-    "hardhat": "^2.0.4",
+    "hardhat": "^2.6.6",
     "husky": "^4.2.5"
+  },
+  "dependencies": {
+    "eth-revert-reason": "^1.0.3"
   }
 }
