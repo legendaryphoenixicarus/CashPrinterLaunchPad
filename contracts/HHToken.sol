@@ -67,8 +67,8 @@ contract HHToken is ERC20Interface, SafeMath {
         name = "HSC-Hardhat-Token";
         decimals = 6;
         _totalSupply = 1000000000000;
-        balances[0xE7AFE8f22f66C4a7bF56ADe8285973b0A17D960a] = _totalSupply;
-        emit Transfer(address(0), 0xE7AFE8f22f66C4a7bF56ADe8285973b0A17D960a, _totalSupply);
+        balances[0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266] = _totalSupply;
+        emit Transfer(address(0), 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266, _totalSupply);
     }
 
     function totalSupply() override public view returns (uint) {
