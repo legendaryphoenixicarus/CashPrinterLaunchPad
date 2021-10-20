@@ -7,9 +7,9 @@ require("./tasks/faucet");
 
 module.exports = {
   solidity: "0.8.0",
-  networks: {
-    hardhat: {
-      chainId: 1337,
-    }
-  }
+  // networks: {
+  //   hardhat: {
+  //     chainId: 31337,
+  //   }
+  // }
 };
