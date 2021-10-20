@@ -114,4 +114,8 @@ contract HHToken is ERC20Interface, SafeMath {
     fallback () external payable {
         revert();
     }
+
+    receive () external payable {
+        revert();
+    }
 }
