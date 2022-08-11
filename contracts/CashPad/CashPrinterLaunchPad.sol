@@ -1,9 +1,9 @@
-pragma solidity >=0.6.0;
+pragma solidity 0.8.4;
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/ownership/Ownable.sol";
-import "./ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./CashPrinterStaking.sol";
 
 contract CashPad is Ownable, ReentrancyGuard {
@@ -11,38 +11,38 @@ contract CashPad is Ownable, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
-    IERC20 CashPad;
+    IERC20 CashPrinter;
     CashPrinterStaking cashPrinterStaking;
 
     address payable private ReceiveToken;
 
     struct IDOPool {
-        uint256 Id;
-        uint256 Begin;
-        uint256 End;
-        uint256 Type; //1:public, 2:private
-        IERC20 IDOToken;
-        uint256 MaxPurchaseTier1;
-        uint256 MaxPurchaseTier2; //==public tier
-        uint256 MaxPurchaseTier3;
-        uint256 TotalCap;
-        uint256 MinimumTokenSoldout;
-        uint256 TotalToken; //total sale token for this pool
-        uint256 RatePerETH;
-        bool IsActived;
-        uint256 LockDuration; //lock after purchase
-        uint256 TotalSold; //total number of token sold
+        uint256 id;
+        uint256 begin;
+        uint256 end;
+        uint256 poolType; //1:public, 2:private
+        address IDOToken;
+        uint256 maxPurchaseTier1;
+        uint256 maxPurchaseTier2; //==public tier
+        uint256 maxPurchaseTier3;
+        uint256 totalCap;
+        uint256 minimumTokenSoldout;
+        uint256 totalToken; //total sale token for this pool
+        uint256 ratePerETH;
+        bool isActived;
+        uint256 lockDuration; //lock after purchase
+        uint256 totalSold; //total number of token sold
     }
 
     struct User {
-        uint256 Id;
-        address UserAddress;
-        bool IsWhitelist;
-        uint256 TotalTokenPurchase;
-        uint256 TotalETHPurchase;
-        uint256 PurchaseTime;
-        bool IsActived;
-        bool IsClaimed;
+        uint256 id;
+        address userAddress;
+        bool isWhitelist;
+        uint256 totalTokenPurchase;
+        uint256 totalETHPurchase;
+        uint256 purchaseTime;
+        bool isActived;
+        bool isClaimed;
     }
 
     mapping(uint256 => mapping(address => User)) public whitelist; //poolid - listuser
@@ -60,11 +60,11 @@ contract CashPad is Ownable, ReentrancyGuard {
     }
 
     function addWhitelist(address user, uint256 pid) public onlyOwner {
-        whitelist[pid][user].Id = pid;
-        whitelist[pid][user].UserAddress = user;
-        whitelist[pid][user].IsWhitelist = true;
+        whitelist[pid][user].id = pid;
+        whitelist[pid][user].userAddress = user;
+        whitelist[pid][user].isWhitelist = true;
 
-        whitelist[pid][user].IsActived = true;
+        whitelist[pid][user].isActived = true;
     }
 
     function addMulWhitelist(address[] memory user, uint256 pid)
@@ -72,11 +72,11 @@ contract CashPad is Ownable, ReentrancyGuard {
         onlyOwner
     {
         for (uint256 i = 0; i < user.length; i++) {
-            whitelist[pid][user[i]].Id = pid;
-            whitelist[pid][user[i]].UserAddress = user[i];
-            whitelist[pid][user[i]].IsWhitelist = true;
+            whitelist[pid][user[i]].id = pid;
+            whitelist[pid][user[i]].userAddress = user[i];
+            whitelist[pid][user[i]].isWhitelist = true;
 
-            whitelist[pid][user[i]].IsActived = true;
+            whitelist[pid][user[i]].isActived = true;
         }
     }
 
@@ -86,17 +86,17 @@ contract CashPad is Ownable, ReentrancyGuard {
         bool isWhitelist,
         bool isActived
     ) public onlyOwner {
-        whitelist[pid][user].IsWhitelist = isWhitelist;
-        whitelist[pid][user].IsActived = isActived;
+        whitelist[pid][user].isWhitelist = isWhitelist;
+        whitelist[pid][user].isActived = isActived;
     }
 
     function IsWhitelist(address user, uint256 pid) public view returns (bool) {
         uint256 poolIndex = pid.sub(1);
-        if (pools[poolIndex].Type == 1) //public
+        if (pools[poolIndex].poolType == 1) //public
         {
-            return (whitelist[pid][user].IsWhitelist &&
-                whitelist[pid][user].IsActived);
-        } else if (pools[poolIndex].Type == 2) //private
+            return (whitelist[pid][user].isWhitelist &&
+                whitelist[pid][user].isActived);
+        } else if (pools[poolIndex].poolType == 2) //private
         {
             (
                 uint256 amount,
@@ -106,7 +106,7 @@ contract CashPad is Ownable, ReentrancyGuard {
                 uint256 endTime
             ) = getUserStakingData(user, 0);
             return (amount >= 500 * 1e18);
-        } else if (pools[poolIndex].Type == 3) {
+        } else if (pools[poolIndex].poolType == 3) {
             //community round
 
             return true;
@@ -130,92 +130,69 @@ contract CashPad is Ownable, ReentrancyGuard {
     }
 
     function addPool(
-        uint256 begin,
-        uint256 end,
-        uint256 _type,
-        IERC20 idoToken,
-        uint256 maxPurchaseTier1,
-        uint256 maxPurchaseTier2,
-        uint256 maxPurchaseTier3,
-        uint256 totalCap,
-        uint256 totalToken,
-        uint256 ratePerETH,
-        uint256 lockDuration,
-        uint256 minimumTokenSoldout
+        IDOPool memory _poolData
     ) public onlyOwner {
         uint256 id = pools.length.add(1);
         pools.push(
             IDOPool({
                 Id: id,
-                Begin: begin,
-                End: end,
-                Type: _type,
-                IDOToken: idoToken,
-                MaxPurchaseTier1: maxPurchaseTier1,
-                MaxPurchaseTier2: maxPurchaseTier2,
-                MaxPurchaseTier3: maxPurchaseTier3,
-                TotalCap: totalCap,
-                TotalToken: totalToken,
-                RatePerETH: ratePerETH,
+                Begin: _poolData.begin,
+                End: _poolData.end,
+                Type: _poolData.poolType,
+                IDOToken: _poolData.IDOToken,
+                MaxPurchaseTier1: _poolData.maxPurchaseTier1,
+                MaxPurchaseTier2: _poolData.maxPurchaseTier2,
+                MaxPurchaseTier3: _poolData.maxPurchaseTier3,
+                TotalCap: _poolData.totalCap,
+                TotalToken: _poolData.totalToken,
+                RatePerETH: _poolData.ratePerETH,
                 IsActived: true,
-                LockDuration: lockDuration,
+                LockDuration: _poolData.lockDuration,
                 TotalSold: 0,
-                MinimumTokenSoldout: minimumTokenSoldout
+                MinimumTokenSoldout: _poolData.minimumTokenSoldout
             })
         );
     }
 
     function updatePool(
-        uint256 pid,
-        uint256 begin,
-        uint256 end,
-        uint256 maxPurchaseTier1,
-        uint256 maxPurchaseTier2,
-        uint256 maxPurchaseTier3,
-        uint256 totalCap,
-        uint256 totalToken,
-        uint256 ratePerETH,
-        uint256 lockDuration,
-        IERC20 idoToken,
-        uint256 minimumTokenSoldout,
-        uint256 pooltype
+        IDOPool memory _poolData
     ) public onlyOwner {
-        uint256 poolIndex = pid.sub(1);
-        if (begin > 0) {
-            pools[poolIndex].Begin = begin;
+        uint256 poolIndex = _poolData.pid.sub(1);
+        if (_poolData.begin > 0) {
+            pools[poolIndex].begin = _poolData.begin;
         }
-        if (end > 0) {
-            pools[poolIndex].End = end;
+        if (_poolData.end > 0) {
+            pools[poolIndex].End = _poolData.end;
         }
 
-        if (maxPurchaseTier1 > 0) {
-            pools[poolIndex].MaxPurchaseTier1 = maxPurchaseTier1;
+        if (_poolData.maxPurchaseTier1 > 0) {
+            pools[poolIndex].maxPurchaseTier1 = _poolData.maxPurchaseTier1;
         }
-        if (maxPurchaseTier2 > 0) {
-            pools[poolIndex].MaxPurchaseTier2 = maxPurchaseTier2;
+        if (_poolData.maxPurchaseTier2 > 0) {
+            pools[poolIndex].maxPurchaseTier2 = _poolData.maxPurchaseTier2;
         }
-        if (maxPurchaseTier3 > 0) {
-            pools[poolIndex].MaxPurchaseTier3 = maxPurchaseTier3;
+        if (_poolData.maxPurchaseTier3 > 0) {
+            pools[poolIndex].maxPurchaseTier3 = _poolData.maxPurchaseTier3;
         }
-        if (totalCap > 0) {
-            pools[poolIndex].TotalCap = totalCap;
+        if (_poolData.totalCap > 0) {
+            pools[poolIndex].TotalCap = _poolData.totalCap;
         }
-        if (totalToken > 0) {
-            pools[poolIndex].TotalToken = totalToken;
+        if (_poolData.totalToken > 0) {
+            pools[poolIndex].totalToken = _poolData.totalToken;
         }
-        if (ratePerETH > 0) {
-            pools[poolIndex].RatePerETH = ratePerETH;
+        if (_poolData.ratePerETH > 0) {
+            pools[poolIndex].ratePerETH = _poolData.ratePerETH;
         }
-        if (lockDuration > 0) {
-            pools[poolIndex].LockDuration = lockDuration;
+        if (_poolData.lockDuration > 0) {
+            pools[poolIndex].lockDuration = _poolData.lockDuration;
         }
-        if (minimumTokenSoldout > 0) {
-            pools[poolIndex].MinimumTokenSoldout = minimumTokenSoldout;
+        if (_poolData.minimumTokenSoldout > 0) {
+            pools[poolIndex].minimumTokenSoldout = _poolData.minimumTokenSoldout;
         }
-        if (pooltype > 0) {
-            pools[poolIndex].Type = pooltype;
+        if (_poolData.pooltype > 0) {
+            pools[poolIndex].poolType = _poolData.pooltype;
         }
-        pools[poolIndex].IDOToken = idoToken;
+        pools[poolIndex].IDOToken = _poolData.IDOToken;
     }
 
     function stopPool(uint256 pid) public onlyOwner {
@@ -248,8 +225,8 @@ contract CashPad is Ownable, ReentrancyGuard {
 
         require(pools[poolIndex].IsActived, "invalid pool");
         require(
-            block.timestamp >= pools[poolIndex].Begin &&
-                block.timestamp <= pools[poolIndex].End,
+            block.timestamp >= pools[poolIndex].begin &&
+                block.timestamp <= pools[poolIndex].end,
             "invalid time"
         );
         //check user
@@ -257,11 +234,11 @@ contract CashPad is Ownable, ReentrancyGuard {
 
         //check amount
         uint256 ethAmount = msg.value;
-        whitelist[pid][msg.sender].TotalETHPurchase = whitelist[pid][msg.sender]
-            .TotalETHPurchase
+        whitelist[pid][msg.sender].totalETHPurchase = whitelist[pid][msg.sender]
+            .totalETHPurchase
             .add(ethAmount);
 
-        if (pools[poolIndex].Type == 2) {
+        if (pools[poolIndex].poolType == 2) {
             (
                 uint256 stakeAmount,
                 uint256 rewardPending,
@@ -271,69 +248,69 @@ contract CashPad is Ownable, ReentrancyGuard {
             ) = getUserStakingData(msg.sender, 0);
             if (stakeAmount < 1500 * 1e18) {
                 require(
-                    whitelist[pid][msg.sender].TotalETHPurchase <=
-                        pools[poolIndex].MaxPurchaseTier1,
+                    whitelist[pid][msg.sender].totalETHPurchase <=
+                        pools[poolIndex].maxPurchaseTier1,
                     "invalid maximum purchase for tier1"
                 );
             } else if (
                 stakeAmount >= 1500 * 1e18 && stakeAmount < 3000 * 1e18
             ) {
                 require(
-                    whitelist[pid][msg.sender].TotalETHPurchase <=
-                        pools[poolIndex].MaxPurchaseTier2,
+                    whitelist[pid][msg.sender].totalETHPurchase <=
+                        pools[poolIndex].maxPurchaseTier2,
                     "invalid maximum purchase for tier2"
                 );
             } else {
                 require(
-                    whitelist[pid][msg.sender].TotalETHPurchase <=
-                        pools[poolIndex].MaxPurchaseTier3,
+                    whitelist[pid][msg.sender].totalETHPurchase <=
+                        pools[poolIndex].maxPurchaseTier3,
                     "invalid maximum purchase for tier3"
                 );
             }
-        } else if (pools[poolIndex].Type == 1) {
+        } else if (pools[poolIndex].poolType == 1) {
             //public pool
 
             require(
-                whitelist[pid][msg.sender].TotalETHPurchase <=
-                    pools[poolIndex].MaxPurchaseTier2,
+                whitelist[pid][msg.sender].totalETHPurchase <=
+                    pools[poolIndex].maxPurchaseTier2,
                 "invalid maximum contribute"
             );
         } else {
             //community round
             require(
-                whitelist[pid][msg.sender].TotalETHPurchase <=
-                    pools[poolIndex].MaxPurchaseTier3 * 2,
+                whitelist[pid][msg.sender].totalETHPurchase <=
+                    pools[poolIndex].maxPurchaseTier3 * 2,
                 "invalid maximum contribute"
             );
         }
 
-        uint256 tokenAmount = ethAmount.mul(pools[poolIndex].RatePerETH).div(
+        uint256 tokenAmount = ethAmount.mul(pools[poolIndex].ratePerETH).div(
             1e18
         );
 
         uint256 remainToken = getRemainIDOToken(pid);
         require(
-            remainToken > pools[poolIndex].MinimumTokenSoldout,
+            remainToken > pools[poolIndex].minimumTokenSoldout,
             "IDO sold out"
         );
         require(remainToken >= tokenAmount, "IDO sold out");
 
-        whitelist[pid][msg.sender].TotalTokenPurchase = whitelist[pid][
+        whitelist[pid][msg.sender].totalTokenPurchase = whitelist[pid][
             msg.sender
-        ].TotalTokenPurchase.add(tokenAmount);
+        ].totalTokenPurchase.add(tokenAmount);
 
-        pools[poolIndex].TotalSold = pools[poolIndex].TotalSold.add(
+        pools[poolIndex].totalSold = pools[poolIndex].totalSold.add(
             tokenAmount
         );
     }
 
     function claimToken(uint256 pid) public nonReentrant {
-        require(!whitelist[pid][msg.sender].IsClaimed, "user already claimed");
+        require(!whitelist[pid][msg.sender].isClaimed, "user already claimed");
         uint256 poolIndex = pid.sub(1);
 
         require(
             block.timestamp >=
-                pools[poolIndex].End.add(pools[poolIndex].LockDuration),
+                pools[poolIndex].End.add(pools[poolIndex].lockDuration),
             "not on time for claiming token"
         );
 
@@ -342,21 +319,21 @@ contract CashPad is Ownable, ReentrancyGuard {
         require(userBalance > 0, "invalid claim");
 
         pools[poolIndex].IDOToken.transfer(msg.sender, userBalance);
-        whitelist[pid][msg.sender].IsClaimed = true;
+        whitelist[pid][msg.sender].isClaimed = true;
     }
 
     function getUserTotalPurchase(uint256 pid) public view returns (uint256) {
-        return whitelist[pid][msg.sender].TotalTokenPurchase;
+        return whitelist[pid][msg.sender].totalTokenPurchase;
     }
 
     function getRemainIDOToken(uint256 pid) public view returns (uint256) {
         uint256 poolIndex = pid.sub(1);
         uint256 tokenBalance = getBalanceTokenByPoolId(pid);
-        if (pools[poolIndex].TotalSold > tokenBalance) {
+        if (pools[poolIndex].totalSold > tokenBalance) {
             return 0;
         }
 
-        return tokenBalance.sub(pools[poolIndex].TotalSold);
+        return tokenBalance.sub(pools[poolIndex].totalSold);
     }
 
     function getBalanceTokenByPoolId(uint256 pid)
@@ -366,7 +343,7 @@ contract CashPad is Ownable, ReentrancyGuard {
     {
         uint256 poolIndex = pid.sub(1);
         //return pools[poolIndex].IDOToken.balanceOf(address(this));
-        return pools[poolIndex].TotalToken;
+        return pools[poolIndex].totalToken;
     }
 
     function getPoolInfo(uint256 pid)
@@ -382,19 +359,19 @@ contract CashPad is Ownable, ReentrancyGuard {
             uint256,
             uint256,
             bool,
-            IERC20
+            address
         )
     {
         uint256 poolIndex = pid.sub(1);
         return (
-            pools[poolIndex].Begin,
+            pools[poolIndex].begin,
             pools[poolIndex].End,
-            pools[poolIndex].Type,
+            pools[poolIndex].poolType,
             //pools[poolIndex].AmountPBRRequire,
             //pools[poolIndex].MaxPurchase,
-            pools[poolIndex].RatePerETH,
-            pools[poolIndex].LockDuration,
-            pools[poolIndex].TotalSold,
+            pools[poolIndex].ratePerETH,
+            pools[poolIndex].lockDuration,
+            pools[poolIndex].totalSold,
             pools[poolIndex].IsActived,
             pools[poolIndex].IDOToken
         );
@@ -406,7 +383,7 @@ contract CashPad is Ownable, ReentrancyGuard {
         returns (uint256, uint256)
     {
         uint256 poolIndex = pid.sub(1);
-        return (pools[poolIndex].LockDuration, pools[poolIndex].TotalSold);
+        return (pools[poolIndex].lockDuration, pools[poolIndex].totalSold);
     }
 
     function getWhitelistfo(uint256 pid)
@@ -422,10 +399,10 @@ contract CashPad is Ownable, ReentrancyGuard {
     {
         return (
             whitelist[pid][msg.sender].UserAddress,
-            whitelist[pid][msg.sender].IsWhitelist,
-            whitelist[pid][msg.sender].TotalTokenPurchase,
-            whitelist[pid][msg.sender].TotalETHPurchase,
-            whitelist[pid][msg.sender].IsClaimed
+            whitelist[pid][msg.sender].isWhitelist,
+            whitelist[pid][msg.sender].iotalTokenPurchase,
+            whitelist[pid][msg.sender].totalETHPurchase,
+            whitelist[pid][msg.sender].isClaimed
         );
     }
 
@@ -440,10 +417,10 @@ contract CashPad is Ownable, ReentrancyGuard {
         )
     {
         return (
-            whitelist[pid][user].IsWhitelist,
-            whitelist[pid][user].TotalTokenPurchase,
-            whitelist[pid][user].TotalETHPurchase,
-            whitelist[pid][user].IsClaimed
+            whitelist[pid][user].isWhitelist,
+            whitelist[pid][user].iotalTokenPurchase,
+            whitelist[pid][user].totalETHPurchase,
+            whitelist[pid][user].isClaimed
         );
     }
 }

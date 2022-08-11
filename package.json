@@ -1,7 +1,6 @@
 {
-  "name": "hardhat-hackathon-boilerplate",
+  "name": "CashPad",
   "version": "1.0.0",
-  "description": "A boilerplate repository to get you started with Hardhat and Ethereum development",
   "directories": {
     "test": "test"
   },
@@ -9,21 +8,11 @@
     "test": "hardhat test",
     "compile": "npx hardhat compile"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/nomiclabs/hardhat-hackathon-boilerplate.git"
-  },
   "keywords": [
     "hardhat",
     "ethereum",
     "hackathon"
   ],
-  "author": "Nomic Labs",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/nomiclabs/hardhat-hackathon-boilerplate/issues"
-  },
-  "homepage": "https://github.com/nomiclabs/hardhat-hackathon-boilerplate#readme",
   "devDependencies": {
     "@openzeppelin/contracts": "^4.7.2",
     "@nomiclabs/hardhat-ethers": "^2.0.0",

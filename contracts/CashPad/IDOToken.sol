@@ -1,12 +1,12 @@
-pragma solidity >=0.6.0;
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20Detailed.sol";
+pragma solidity 0.8.4;
 
-contract IDOToken is ERC20, ERC20Detailed, ERC20Burnable {
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+
+contract IDOToken is ERC20, ERC20Burnable {
     constructor(uint256 initialSupply)
         public
-        ERC20Detailed("IDOToken", "IDO", 18)
+        ERC20("IDOToken", "IDO")
     {
         _mint(msg.sender, initialSupply);
     }

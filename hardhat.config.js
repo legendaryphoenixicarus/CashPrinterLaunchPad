@@ -5,11 +5,36 @@ require("@nomiclabs/hardhat-waffle");
 // testing the frontend.
 require("./tasks/faucet");
 
+// You need to export an object to set up your config
+// Go to https://hardhat.org/config/ to learn more
+
+/**
+ * @type import('hardhat/config').HardhatUserConfig
+ */
 module.exports = {
-  solidity: "0.8.0",
+  solidity: "0.8.4",
+  defaultNetwork: "hardhat",
+  settings: {
+    optimizer: {
+      runs: 200,
+      enabled: true
+    }
+  }
   // networks: {
   //   hardhat: {
-  //     chainId: 31337,
-  //   }
-  // }
+  //   },
+  //   kovan: {
+  //     url: `https://kovan.infura.io/v3/${infuraId}`,
+  //     accounts: [privateKey]
+  //   },
+  //   fantom: {
+  //     url: "https://rpcapi.fantom.network",
+  //     accounts: [privateKey],
+  //   },
+  //   "fantom-testnet": {
+  //     url: "https://rpc.testnet.fantom.network",
+  //     accounts: [privateKey],
+  //   },
+  // },
 };
+
