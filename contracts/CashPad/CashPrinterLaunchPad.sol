@@ -135,34 +135,35 @@ contract CashPad is Ownable, ReentrancyGuard {
         uint256 id = pools.length.add(1);
         pools.push(
             IDOPool({
-                Id: id,
-                Begin: _poolData.begin,
-                End: _poolData.end,
-                Type: _poolData.poolType,
+                id: id,
+                begin: _poolData.begin,
+                end: _poolData.end,
+                poolType: _poolData.poolType,
                 IDOToken: _poolData.IDOToken,
-                MaxPurchaseTier1: _poolData.maxPurchaseTier1,
-                MaxPurchaseTier2: _poolData.maxPurchaseTier2,
-                MaxPurchaseTier3: _poolData.maxPurchaseTier3,
-                TotalCap: _poolData.totalCap,
-                TotalToken: _poolData.totalToken,
-                RatePerETH: _poolData.ratePerETH,
-                IsActived: true,
-                LockDuration: _poolData.lockDuration,
-                TotalSold: 0,
-                MinimumTokenSoldout: _poolData.minimumTokenSoldout
+                maxPurchaseTier1: _poolData.maxPurchaseTier1,
+                maxPurchaseTier2: _poolData.maxPurchaseTier2,
+                maxPurchaseTier3: _poolData.maxPurchaseTier3,
+                totalCap: _poolData.totalCap,
+                totalToken: _poolData.totalToken,
+                ratePerETH: _poolData.ratePerETH,
+                isActived: true,
+                lockDuration: _poolData.lockDuration,
+                totalSold: 0,
+                minimumTokenSoldout: _poolData.minimumTokenSoldout
             })
         );
     }
 
     function updatePool(
+        uint256 pid,
         IDOPool memory _poolData
     ) public onlyOwner {
-        uint256 poolIndex = _poolData.pid.sub(1);
+        uint256 poolIndex = pid.sub(1);
         if (_poolData.begin > 0) {
             pools[poolIndex].begin = _poolData.begin;
         }
         if (_poolData.end > 0) {
-            pools[poolIndex].End = _poolData.end;
+            pools[poolIndex].end = _poolData.end;
         }
 
         if (_poolData.maxPurchaseTier1 > 0) {
@@ -175,7 +176,7 @@ contract CashPad is Ownable, ReentrancyGuard {
             pools[poolIndex].maxPurchaseTier3 = _poolData.maxPurchaseTier3;
         }
         if (_poolData.totalCap > 0) {
-            pools[poolIndex].TotalCap = _poolData.totalCap;
+            pools[poolIndex].totalCap = _poolData.totalCap;
         }
         if (_poolData.totalToken > 0) {
             pools[poolIndex].totalToken = _poolData.totalToken;
@@ -189,20 +190,20 @@ contract CashPad is Ownable, ReentrancyGuard {
         if (_poolData.minimumTokenSoldout > 0) {
             pools[poolIndex].minimumTokenSoldout = _poolData.minimumTokenSoldout;
         }
-        if (_poolData.pooltype > 0) {
-            pools[poolIndex].poolType = _poolData.pooltype;
+        if (_poolData.poolType > 0) {
+            pools[poolIndex].poolType = _poolData.poolType;
         }
         pools[poolIndex].IDOToken = _poolData.IDOToken;
     }
 
     function stopPool(uint256 pid) public onlyOwner {
         uint256 poolIndex = pid.sub(1);
-        pools[poolIndex].IsActived = false;
+        pools[poolIndex].isActived = false;
     }
 
     function activePool(uint256 pid) public onlyOwner {
         uint256 poolIndex = pid.sub(1);
-        pools[poolIndex].IsActived = true;
+        pools[poolIndex].isActived = true;
     }
 
     //withdraw contract token
@@ -223,7 +224,7 @@ contract CashPad is Ownable, ReentrancyGuard {
     function purchaseIDO(uint256 pid) public payable nonReentrant {
         uint256 poolIndex = pid.sub(1);
 
-        require(pools[poolIndex].IsActived, "invalid pool");
+        require(pools[poolIndex].isActived, "invalid pool");
         require(
             block.timestamp >= pools[poolIndex].begin &&
                 block.timestamp <= pools[poolIndex].end,
@@ -310,7 +311,7 @@ contract CashPad is Ownable, ReentrancyGuard {
 
         require(
             block.timestamp >=
-                pools[poolIndex].End.add(pools[poolIndex].lockDuration),
+                pools[poolIndex].end.add(pools[poolIndex].lockDuration),
             "not on time for claiming token"
         );
 
@@ -318,7 +319,7 @@ contract CashPad is Ownable, ReentrancyGuard {
 
         require(userBalance > 0, "invalid claim");
 
-        pools[poolIndex].IDOToken.transfer(msg.sender, userBalance);
+        IERC20(pools[poolIndex].IDOToken).transfer(msg.sender, userBalance);
         whitelist[pid][msg.sender].isClaimed = true;
     }
 
@@ -365,14 +366,14 @@ contract CashPad is Ownable, ReentrancyGuard {
         uint256 poolIndex = pid.sub(1);
         return (
             pools[poolIndex].begin,
-            pools[poolIndex].End,
+            pools[poolIndex].end,
             pools[poolIndex].poolType,
             //pools[poolIndex].AmountPBRRequire,
             //pools[poolIndex].MaxPurchase,
             pools[poolIndex].ratePerETH,
             pools[poolIndex].lockDuration,
             pools[poolIndex].totalSold,
-            pools[poolIndex].IsActived,
+            pools[poolIndex].isActived,
             pools[poolIndex].IDOToken
         );
     }
@@ -398,9 +399,9 @@ contract CashPad is Ownable, ReentrancyGuard {
         )
     {
         return (
-            whitelist[pid][msg.sender].UserAddress,
+            whitelist[pid][msg.sender].userAddress,
             whitelist[pid][msg.sender].isWhitelist,
-            whitelist[pid][msg.sender].iotalTokenPurchase,
+            whitelist[pid][msg.sender].totalTokenPurchase,
             whitelist[pid][msg.sender].totalETHPurchase,
             whitelist[pid][msg.sender].isClaimed
         );
@@ -418,7 +419,7 @@ contract CashPad is Ownable, ReentrancyGuard {
     {
         return (
             whitelist[pid][user].isWhitelist,
-            whitelist[pid][user].iotalTokenPurchase,
+            whitelist[pid][user].totalTokenPurchase,
             whitelist[pid][user].totalETHPurchase,
             whitelist[pid][user].isClaimed
         );
