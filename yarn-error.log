@@ -1,0 +1,65 @@
+Arguments: 
+  C:\Program Files\nodejs\node.exe C:\Users\Phoenix\AppData\Roaming\npm\node_modules\yarn\bin\yarn.js
+
+PATH: 
+  C:\Users\Phoenix\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\local\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\Phoenix\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;C:\xampp\php;C:\ProgramData\ComposerSetup\bin;C:\Program Files\PuTTY;C:\ProgramData\chocolatey\bin;C:\ffmpeg\bin;C:\Program Files\Go\bin;C:\Users\Phoenix\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Program Files\Git\cmd;C:\Users\Phoenix\AppData\Local\Programs\Python\Python37\Scripts;C:\Users\Phoenix\AppData\Local\Programs\Python\Python37;C:\Users\Phoenix\.cargo\bin;C:\Users\Phoenix\.local\share\solana\install\active_release\bin;C:\Users\Phoenix\AppData\Local\Microsoft\WindowsApps;C:\Users\Phoenix\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\Phoenix\AppData\Roaming\Composer\vendor\bin;C:\Users\Phoenix\AppData\Roaming\npm;C:\Users\Phoenix\Documents\flutter\bin;C:\Users\Phoenix\Bin;C:\Users\Phoenix\go\bin;C:\Program Files\Git\usr\bin\vendor_perl;C:\Program Files\Git\usr\bin\core_perl
+
+Yarn version: 
+  1.22.15
+
+Node version: 
+  14.17.4
+
+Platform: 
+  win32 x64
+
+Trace: 
+  Error: EPERM: operation not permitted, copyfile 'C:\Users\Phoenix\AppData\Local\Yarn\Cache\v6\npm-ganache-core-2.13.2-27e6fc5417c10e6e76e2e646671869d7665814a3-integrity\node_modules\ganache-core\node_modules\keccak\index.js' -> 'E:\trial-course\Blockchain\Ethereum\hardhat\hardhat-hackathon-boilerplate\node_modules\ganache-core\node_modules\keccak\index.js'
+
+npm manifest: 
+  {
+    "name": "hardhat-hackathon-boilerplate",
+    "version": "1.0.0",
+    "description": "A boilerplate repository to get you started with Hardhat and Ethereum development",
+    "directories": {
+      "test": "test"
+    },
+    "scripts": {
+      "test": "hardhat test",
+      "compile": "npx hardhat compile"
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/nomiclabs/hardhat-hackathon-boilerplate.git"
+    },
+    "keywords": [
+      "hardhat",
+      "ethereum",
+      "hackathon"
+    ],
+    "author": "Nomic Labs",
+    "license": "MIT",
+    "bugs": {
+      "url": "https://github.com/nomiclabs/hardhat-hackathon-boilerplate/issues"
+    },
+    "homepage": "https://github.com/nomiclabs/hardhat-hackathon-boilerplate#readme",
+    "devDependencies": {
+      "@openzeppelin/contracts": "^4.7.2",
+      "@nomiclabs/hardhat-ethers": "^2.0.0",
+      "@nomiclabs/hardhat-waffle": "^2.0.0",
+      "chai": "^4.2.0",
+      "ethereum-waffle": "^3.1.1",
+      "ethers": "^5.0.0",
+      "hardhat": "^2.6.6",
+      "husky": "^4.2.5"
+    },
+    "dependencies": {
+      "eth-revert-reason": "^1.0.3"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
