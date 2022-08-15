@@ -387,7 +387,7 @@ contract CashPad is Ownable, ReentrancyGuard {
         return (pools[poolIndex].lockDuration, pools[poolIndex].totalSold);
     }
 
-    function getWhitelistfo(uint256 pid)
+    function getWhitelistInfo(uint256 pid)
         public
         view
         returns (

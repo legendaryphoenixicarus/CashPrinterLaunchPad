@@ -105,23 +105,22 @@ contract CashPrinterStaking is Ownable {
         UserInfo storage user = userInfo[_pid][msg.sender];
         require(user.amount >= _amount, "withdraw: bad request");
         require(user.endTime <= block.timestamp, "withdraw: need expired time");
+        require(_amount > 0, "withdraw: amount should not be zero");
 
-        if (_amount > 0) {
-            user.amount = user.amount.sub(_amount);
-            pool.totalTokenStaked = pool.totalTokenStaked.sub(_amount);
-            uint256 reward = _amount.mul(pool.apr).div(365);
-            user.pending = user.pending.sub(reward);
+        // stake amount
+        user.amount = user.amount.sub(_amount);
+        pool.totalTokenStaked = pool.totalTokenStaked.sub(_amount);
+        // rewards
+        uint256 reward = _amount.mul(pool.apr).div(365);
+        user.pending = user.pending.sub(reward);
+        user.claimed = user.claimed.add(reward);
+        pool.totalTokenClaimed.add(reward);
 
-            pool.stakeToken.safeTransfer(address(msg.sender), _amount);
+        // reduce withdrawal fee : 10%
+        uint realAmount = _amount.mul(90).div(100);
 
-            if (user.endTime <= block.timestamp) {
-                uint256 claimAmount = _amount.mul(pool.apr).div(365);
-                user.claimed = user.claimed.add(claimAmount);
-                user.pending = user.pending.sub(claimAmount);
-                pool.totalTokenClaimed.add(claimAmount);
-                pool.stakeToken.safeTransfer(address(msg.sender), claimAmount);
-            }
-        }
+        // transfer withdrawal amount
+        pool.stakeToken.safeTransfer(address(msg.sender), realAmount.add(reward));
         emit Withdraw(msg.sender, _pid, _amount);
     }
 
