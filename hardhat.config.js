@@ -1,4 +1,6 @@
 require("@nomiclabs/hardhat-waffle");
+require("@nomiclabs/hardhat-etherscan");
+require("hardhat-interface-generator");
 require('dotenv').config();
 
 const privateKey = process.env.PRIVATE_KEY;

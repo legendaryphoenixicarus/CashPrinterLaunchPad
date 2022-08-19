@@ -10,7 +10,8 @@
     "deploy-dogechain": "npx hardhat run scripts/deploy.js --network dogechain",
     "deploy-testnet": "npx hardhat run scripts/deploy.js --network dogechain-testnet",
     "deploy-bscMain": "yarn hardhat run scripts/deploy.js --network bscMain",
-    "deploy-bscTest": "yarn hardhat run scripts/deploy.js --network bscTest"
+    "deploy-bscTest": "yarn hardhat run scripts/deploy.js --network bscTest",
+    "verify-dogechain": "npx hardhat verify scripts/deploy.js --network dogechain"
   },
   "keywords": [
     "hardhat",
@@ -19,6 +20,7 @@
   ],
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.0",
+    "@nomiclabs/hardhat-etherscan": "^3.1.0",
     "@nomiclabs/hardhat-waffle": "^2.0.0",
     "@openzeppelin/contracts": "^4.7.2",
     "chai": "^4.2.0",
@@ -26,6 +28,7 @@
     "ethereum-waffle": "^3.1.1",
     "ethers": "^5.0.0",
     "hardhat": "^2.6.6",
+    "hardhat-interface-generator": "^0.0.6",
     "husky": "^4.2.5"
   },
   "dependencies": {
