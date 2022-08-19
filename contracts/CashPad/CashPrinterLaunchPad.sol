@@ -50,11 +50,11 @@ contract CashPad is Ownable, ReentrancyGuard {
     IDOPool[] pools;
 
     constructor(
-        address payable receiveTokenAdd,
+        // address payable receiveTokenAdd,
         IERC20 cashPrinter,
         CashPrinterStaking _cashPrinterStaking
     ) public {
-        ReceiveToken = receiveTokenAdd;
+        // ReceiveToken = receiveTokenAdd;
         CashPrinter = cashPrinter;
         cashPrinterStaking = _cashPrinterStaking;
     }
